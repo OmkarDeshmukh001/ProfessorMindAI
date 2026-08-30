@@ -1,16 +1,24 @@
 from backend.services.embedding_service import model
+
 from backend.services.vector_store import (
     load_faiss_index,
     search_faiss
 )
 
 
-def retrieve_chunks(query, file_id, top_k=3):
+def retrieve_chunks(
+    query,
+    file_id,
+    top_k=3,
+    distance_threshold=1.2
+):
 
     # Load FAISS index and metadata
-    index, chunks = load_faiss_index(file_id)
+    index, chunks = load_faiss_index(
+        file_id
+    )
 
-    # Convert question into embedding
+    # Convert question to embedding
     query_embedding = model.encode(
         [query],
         convert_to_numpy=True
@@ -18,10 +26,11 @@ def retrieve_chunks(query, file_id, top_k=3):
 
     # Search FAISS
     results = search_faiss(
-        index,
-        chunks,
-        query_embedding,
-        top_k
+        index=index,
+        chunks=chunks,
+        query_embedding=query_embedding,
+        top_k=top_k,
+        distance_threshold=distance_threshold
     )
 
     return results

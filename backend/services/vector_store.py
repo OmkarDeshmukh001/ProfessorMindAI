@@ -49,17 +49,28 @@ def load_faiss_index(file_id):
     return index, chunks
 
 
-def search_faiss(index, chunks, query_embedding, top_k=3):
+def search_faiss(index, chunks, query_embedding, top_k=3, distance_threshold=1.2):
 
     query_embedding = np.asarray(query_embedding).astype("float32")
 
-    distances, indices = index.search(query_embedding, top_k)
+    distances, indices = index.search(
+        query_embedding,
+        top_k
+    )
 
     results = []
 
-    for distance, index_position in zip(distances[0], indices[0]):
+    for distance, index_position in zip(
+        distances[0],
+        indices[0]
+    ):
 
+        # No valid result
         if index_position == -1:
+            continue
+
+        # Ignore weak matches
+        if distance > distance_threshold:
             continue
 
         results.append({

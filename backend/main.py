@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from backend.api.upload import router as upload_router
 from backend.api.question import router as question_router
+from backend.api.documents import router as documents_router
 
 from backend.database import Base, engine
 from backend.models.document import Document
@@ -24,6 +25,11 @@ app.include_router(
 
 app.include_router(
     question_router,
+    prefix="/api"
+)
+
+app.include_router(
+    documents_router,
     prefix="/api"
 )
 

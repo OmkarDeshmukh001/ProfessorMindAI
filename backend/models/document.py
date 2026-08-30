@@ -14,13 +14,22 @@ class Document(Base):
 
     stored_as = Column(String, nullable=False)
 
-    total_pages = Column(Integer, nullable=False)
+    total_pages = Column(Integer, default=0)
 
-    total_chunks = Column(Integer, nullable=False)
+    total_chunks = Column(Integer, default=0)
 
-    embedding_dimension = Column(Integer, nullable=False)
+    embedding_dimension = Column(Integer, default=0)
 
-    status = Column(String, nullable=False, default="processed")
+    status = Column(
+        String,
+        nullable=False,
+        default="processing"
+    )
+
+    error_message = Column(
+        String,
+        nullable=True
+    )
 
     uploaded_at = Column(
         DateTime,
