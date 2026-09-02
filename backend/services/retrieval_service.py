@@ -9,22 +9,17 @@ from backend.services.vector_store import (
 def retrieve_chunks(
     query,
     file_id,
-    top_k=3,
+    top_k=8,
     distance_threshold=1.2
 ):
 
-    # Load FAISS index and metadata
-    index, chunks = load_faiss_index(
-        file_id
-    )
+    index, chunks = load_faiss_index(file_id)
 
-    # Convert question to embedding
     query_embedding = model.encode(
         [query],
         convert_to_numpy=True
     )
 
-    # Search FAISS
     results = search_faiss(
         index=index,
         chunks=chunks,

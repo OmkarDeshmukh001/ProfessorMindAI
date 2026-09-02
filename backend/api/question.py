@@ -10,7 +10,7 @@ router = APIRouter()
 class QuestionRequest(BaseModel):
     file_id: str
     question: str
-    top_k: int = 3
+    top_k: int = 8
 
 
 @router.post("/ask")

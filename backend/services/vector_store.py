@@ -49,9 +49,17 @@ def load_faiss_index(file_id):
     return index, chunks
 
 
-def search_faiss(index, chunks, query_embedding, top_k=3, distance_threshold=1.2):
+def search_faiss(
+    index,
+    chunks,
+    query_embedding,
+    top_k=8,
+    distance_threshold=1.2
+):
 
-    query_embedding = np.asarray(query_embedding).astype("float32")
+    query_embedding = np.asarray(
+        query_embedding
+    ).astype("float32")
 
     distances, indices = index.search(
         query_embedding,
@@ -65,15 +73,14 @@ def search_faiss(index, chunks, query_embedding, top_k=3, distance_threshold=1.2
         indices[0]
     ):
 
-        # No valid result
         if index_position == -1:
             continue
 
-        # Ignore weak matches
         if distance > distance_threshold:
             continue
 
         results.append({
+            "chunk_index": int(index_position),
             "text": chunks[index_position]["text"],
             "page_number": chunks[index_position]["page_number"],
             "distance": float(distance)
