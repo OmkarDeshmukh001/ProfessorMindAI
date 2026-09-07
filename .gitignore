@@ -6,6 +6,9 @@ __pycache__/
 # User uploaded files
 storage/pdfs/
 
+# Notebook storage
+storage/notebooks/
+
 # Generated vector stores
 storage/faiss/
 faiss/
