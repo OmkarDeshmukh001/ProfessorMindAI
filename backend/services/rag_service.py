@@ -3,11 +3,11 @@ from backend.services.context_builder import build_context
 from backend.services.llm_service import generate_answer
 
 
-def answer_question(query, file_id, top_k=8, distance_threshold=1.2):
+def answer_question(query, notebook_id, top_k=8, distance_threshold=1.2):
 
     results = retrieve_chunks(
         query=query,
-        file_id=file_id,
+        notebook_id=notebook_id,
         top_k=top_k,
         distance_threshold=distance_threshold
     )
@@ -26,7 +26,6 @@ def answer_question(query, file_id, top_k=8, distance_threshold=1.2):
         context=context
     )
 
-    # ADD THE CODE HERE
     return {
         "question": query,
         "answer": answer,

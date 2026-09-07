@@ -8,7 +8,7 @@ router = APIRouter()
 
 
 class QuestionRequest(BaseModel):
-    file_id: str
+    notebook_id: str
     question: str
     top_k: int = 8
 
@@ -19,7 +19,7 @@ async def ask_question(request: QuestionRequest):
     try:
         result = answer_question(
             query=request.question,
-            file_id=request.file_id,
+            notebook_id=request.notebook_id,
             top_k=request.top_k
         )
 
@@ -28,7 +28,7 @@ async def ask_question(request: QuestionRequest):
     except FileNotFoundError:
         raise HTTPException(
             status_code=404,
-            detail="FAISS index for this file was not found."
+            detail="FAISS index for this notebook was not found."
         )
 
     except Exception as e:

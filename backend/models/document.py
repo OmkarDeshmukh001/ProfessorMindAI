@@ -9,7 +9,11 @@ class Document(Base):
     __tablename__ = "documents"
 
     file_id = Column(String, primary_key=True, index=True)
-
+    notebook_id = Column(
+        String,
+        nullable=False,
+        index=True
+    )
     filename = Column(String, nullable=False)
 
     stored_as = Column(String, nullable=False)

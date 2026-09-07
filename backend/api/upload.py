@@ -6,26 +6,24 @@ import uuid
 from backend.services.pdf_extractor import extract_text_from_pdf
 from backend.services.text_chunker import chunk_text
 from backend.services.embedding_service import generate_embeddings
-from backend.services.vector_store import (
-    create_faiss_index,
-    save_faiss_index
-)
+from backend.services.vector_store import add_to_notebook_faiss
 
 from backend.database import SessionLocal
 from backend.models.document import Document
+from backend.models.notebook import Notebook
 
 
 router = APIRouter()
 
-UPLOAD_DIR = Path("storage/pdfs")
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-
-@router.post("/upload-pdf")
-async def upload_pdf(file: UploadFile = File(...)):
+@router.post("/notebooks/{notebook_id}/upload-pdf")
+async def upload_pdf(
+    notebook_id: str,
+    file: UploadFile = File(...)
+):
 
     # -----------------------------
-    # 1. Validate file
+    # 1. Validate PDF
     # -----------------------------
 
     if file.content_type != "application/pdf":
@@ -36,148 +34,206 @@ async def upload_pdf(file: UploadFile = File(...)):
         )
 
     # -----------------------------
-    # 2. Generate unique ID
-    # -----------------------------
-
-    file_id = str(uuid.uuid4())
-
-    filename = f"{file_id}.pdf"
-
-    file_path = UPLOAD_DIR / filename
-
-    # -----------------------------
-    # 3. Save PDF
-    # -----------------------------
-
-    with open(file_path, "wb") as buffer:
-
-        shutil.copyfileobj(
-            file.file,
-            buffer
-        )
-
-    # -----------------------------
-    # 4. Create DB record
+    # 2. Open database
     # -----------------------------
 
     db = SessionLocal()
 
-    document = Document(
-        file_id=file_id,
-        filename=file.filename,
-        stored_as=filename,
-        status="processing"
-    )
-
-    db.add(document)
-    db.commit()
-
     try:
 
         # -----------------------------
-        # 5. Extract text
+        # 3. Check notebook exists
         # -----------------------------
 
-        pages = extract_text_from_pdf(
-            str(file_path)
+        notebook = (
+            db.query(Notebook)
+            .filter(
+                Notebook.notebook_id == notebook_id
+            )
+            .first()
         )
 
-        if not pages:
+        if not notebook:
 
-            raise ValueError(
-                "No pages found in PDF."
+            raise HTTPException(
+                status_code=404,
+                detail="Notebook not found."
             )
 
         # -----------------------------
-        # 6. Chunk text
+        # 4. Create notebook source directory
         # -----------------------------
 
-        chunks = chunk_text(pages)
+        source_dir = (
+            Path("storage/notebooks")
+            / str(notebook_id)
+            / "sources"
+        )
 
-        if not chunks:
+        source_dir.mkdir(
+            parents=True,
+            exist_ok=True
+        )
 
-            raise ValueError(
-                "No text could be extracted from PDF."
+        # -----------------------------
+        # 5. Generate unique file ID
+        # -----------------------------
+
+        file_id = str(uuid.uuid4())
+
+        stored_filename = f"{file_id}.pdf"
+
+        file_path = (
+            source_dir
+            / stored_filename
+        )
+
+        # -----------------------------
+        # 6. Save PDF
+        # -----------------------------
+
+        with open(
+            file_path,
+            "wb"
+        ) as buffer:
+
+            shutil.copyfileobj(
+                file.file,
+                buffer
             )
 
         # -----------------------------
-        # 7. Generate embeddings
+        # 7. Create document record
         # -----------------------------
 
-        embeddings = generate_embeddings(
-            chunks
+        document = Document(
+            file_id=file_id,
+            notebook_id=notebook_id,
+            filename=file.filename,
+            stored_as=stored_filename,
+            status="processing"
         )
 
-        # -----------------------------
-        # 8. Create FAISS index
-        # -----------------------------
-
-        index = create_faiss_index(
-            embeddings
-        )
-
-        # -----------------------------
-        # 9. Save FAISS
-        # -----------------------------
-
-        save_faiss_index(
-            index,
-            chunks,
-            file_id
-        )
-
-        # -----------------------------
-        # 10. Update DB
-        # -----------------------------
-
-        document.total_pages = len(pages)
-
-        document.total_chunks = len(chunks)
-
-        document.embedding_dimension = embeddings.shape[1]
-
-        document.status = "completed"
-
-        document.error_message = None
-
+        db.add(document)
         db.commit()
 
-        # -----------------------------
-        # 11. Return response
-        # -----------------------------
+        try:
 
-        return {
-            "message": "PDF uploaded and processed successfully",
-            "file_id": file_id,
-            "filename": file.filename,
-            "stored_as": filename,
-            "total_pages": len(pages),
-            "total_chunks": len(chunks),
-            "embedding_dimension": embeddings.shape[1],
-            "faiss_vectors": index.ntotal,
-            "status": "completed"
-        }
+            # -----------------------------
+            # 8. Extract text
+            # -----------------------------
 
-    except Exception as e:
+            pages = extract_text_from_pdf(
+                str(file_path)
+            )
 
-        # -----------------------------
-        # Processing failed
-        # -----------------------------
+            if not pages:
 
-        document.status = "failed"
+                raise ValueError(
+                    "No pages found in PDF."
+                )
 
-        document.error_message = str(e)
+            # -----------------------------
+            # 9. Create chunks
+            # -----------------------------
 
-        db.commit()
+            chunks = chunk_text(
+                pages
+            )
 
-        # Remove PDF
-        if file_path.exists():
-            file_path.unlink()
+            if not chunks:
 
-        raise HTTPException(
-            status_code=500,
-            detail=f"PDF processing failed: {str(e)}"
-        )
+                raise ValueError(
+                    "No text could be extracted from PDF."
+                )
+
+            # -----------------------------
+            # Add file ID to chunks
+            # -----------------------------
+
+            for chunk in chunks:
+
+                chunk["file_id"] = file_id
+
+            # -----------------------------
+            # 10. Generate embeddings
+            # -----------------------------
+
+            embeddings = generate_embeddings(
+                chunks
+            )
+
+            # -----------------------------
+            # 11. Add to Notebook FAISS
+            # -----------------------------
+
+            index, all_chunks = add_to_notebook_faiss(
+                notebook_id=notebook_id,
+                embeddings=embeddings,
+                chunks=chunks
+            )
+
+            # -----------------------------
+            # 12. Update document
+            # -----------------------------
+
+            document.total_pages = len(pages)
+
+            document.total_chunks = len(chunks)
+
+            document.embedding_dimension = (
+                embeddings.shape[1]
+            )
+
+            document.status = "completed"
+
+            document.error_message = None
+
+            db.commit()
+
+            # -----------------------------
+            # 13. Return response
+            # -----------------------------
+
+            return {
+                "message": "PDF uploaded and processed successfully",
+                "notebook_id": notebook_id,
+                "notebook_name": notebook.name,
+                "file_id": file_id,
+                "filename": file.filename,
+                "stored_as": stored_filename,
+                "total_pages": len(pages),
+                "total_chunks": len(chunks),
+                "embedding_dimension": embeddings.shape[1],
+                "faiss_vectors": index.ntotal,
+                "notebook_chunks": len(all_chunks),
+                "status": "completed"
+            }
+
+        except Exception as e:
+
+            # -----------------------------
+            # Mark document as failed
+            # -----------------------------
+
+            document.status = "failed"
+
+            document.error_message = str(e)
+
+            db.commit()
+
+            # -----------------------------
+            # Delete failed PDF
+            # -----------------------------
+
+            if file_path.exists():
+
+                file_path.unlink()
+
+            raise HTTPException(
+                status_code=500,
+                detail=f"PDF processing failed: {str(e)}"
+            )
 
     finally:
 

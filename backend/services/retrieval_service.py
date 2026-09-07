@@ -1,19 +1,19 @@
 from backend.services.embedding_service import model
 
 from backend.services.vector_store import (
-    load_faiss_index,
+    load_notebook_faiss,
     search_faiss
 )
 
 
 def retrieve_chunks(
     query,
-    file_id,
+    notebook_id,
     top_k=8,
     distance_threshold=1.2
 ):
 
-    index, chunks = load_faiss_index(file_id)
+    index, chunks = load_notebook_faiss(notebook_id)
 
     query_embedding = model.encode(
         [query],
