@@ -13,12 +13,33 @@ def retrieve_chunks(
     distance_threshold=1.2
 ):
 
-    index, chunks = load_notebook_faiss(notebook_id)
+    # ------------------------------------------
+    # Load notebook-specific FAISS
+    # ------------------------------------------
+
+    index, chunks = load_notebook_faiss(
+        notebook_id
+    )
+
+    # ------------------------------------------
+    # No FAISS index or no chunks
+    # ------------------------------------------
+
+    if index is None or not chunks:
+        return []
+
+    # ------------------------------------------
+    # Create query embedding
+    # ------------------------------------------
 
     query_embedding = model.encode(
         [query],
         convert_to_numpy=True
     )
+
+    # ------------------------------------------
+    # Search notebook FAISS
+    # ------------------------------------------
 
     results = search_faiss(
         index=index,

@@ -243,6 +243,10 @@ def search_faiss(
                 index_position
             ),
 
+            "file_id": chunks[
+                index_position
+            ].get("file_id"),
+
             "text": chunks[
                 index_position
             ]["text"],
