@@ -1,12 +1,14 @@
+# Python
 venv/
 __pycache__/
 *.pyc
+
+# Environment / secrets
 .env
+.env.*
 
 # User uploaded files
 storage/pdfs/
-
-# Notebook storage
 storage/notebooks/
 
 # Generated vector stores
@@ -16,3 +18,14 @@ metadata/
 
 # Local database
 *.db
+
+# Test artifacts
+*.wav
+*.mp3
+*.m4a
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

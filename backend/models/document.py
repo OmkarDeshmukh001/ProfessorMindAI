@@ -9,20 +9,43 @@ class Document(Base):
     __tablename__ = "documents"
 
     file_id = Column(String, primary_key=True, index=True)
+
     notebook_id = Column(
         String,
         nullable=False,
         index=True
     )
-    filename = Column(String, nullable=False)
 
-    stored_as = Column(String, nullable=False)
+    filename = Column(
+        String,
+        nullable=False
+    )
 
-    total_pages = Column(Integer, default=0)
+    stored_as = Column(
+        String,
+        nullable=False
+    )
 
-    total_chunks = Column(Integer, default=0)
+    file_type = Column(
+        String,
+        nullable=False,
+        default="pdf"
+    )
 
-    embedding_dimension = Column(Integer, default=0)
+    total_pages = Column(
+        Integer,
+        default=0
+    )
+
+    total_chunks = Column(
+        Integer,
+        default=0
+    )
+
+    embedding_dimension = Column(
+        Integer,
+        default=0
+    )
 
     status = Column(
         String,

@@ -204,6 +204,12 @@ def search_faiss(
     distance_threshold=1.2
 ):
 
+    if index is None:
+        return []
+
+    if index.ntotal == 0:
+        return []
+
     query_embedding = np.asarray(
         query_embedding
     ).astype("float32")
@@ -237,23 +243,39 @@ def search_faiss(
         if distance > distance_threshold:
             continue
 
+        chunk = chunks[index_position]
+
         results.append({
 
             "chunk_index": int(
                 index_position
             ),
 
-            "file_id": chunks[
-                index_position
-            ].get("file_id"),
+            "file_id": chunk.get(
+                "file_id"
+            ),
 
-            "text": chunks[
-                index_position
-            ]["text"],
+            "text": chunk.get(
+                "text",
+                ""
+            ),
 
-            "page_number": chunks[
-                index_position
-            ]["page_number"],
+            "page_number": chunk.get(
+                "page_number"
+            ),
+
+            "start": chunk.get(
+                "start"
+            ),
+
+            "end": chunk.get(
+                "end"
+            ),
+
+            "source_type": chunk.get(
+                "source_type",
+                "pdf"
+            ),
 
             "distance": float(
                 distance

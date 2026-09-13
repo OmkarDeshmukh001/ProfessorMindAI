@@ -65,21 +65,63 @@ def answer_question(
 
     for result in results:
 
-        sources.append({
-            "file_id": result.get("file_id"),
-            "page_number": result.get(
-                "page_number"
-            ),
-            "chunk_index": result.get(
-                "chunk_index"
-            ),
-            "text": result.get(
-                "text"
-            ),
-            "distance": result.get(
-                "distance"
-            )
-        })
+        source_type = result.get(
+            "source_type",
+            "pdf"
+        )
+
+        # --------------------------------------
+        # PDF SOURCE
+        # --------------------------------------
+
+        if source_type == "pdf":
+
+            sources.append({
+                "type": "pdf",
+                "file_id": result.get(
+                    "file_id"
+                ),
+                "page_number": result.get(
+                    "page_number"
+                ),
+                "chunk_index": result.get(
+                    "chunk_index"
+                ),
+                "text": result.get(
+                    "text"
+                ),
+                "distance": result.get(
+                    "distance"
+                )
+            })
+
+        # --------------------------------------
+        # VIDEO SOURCE
+        # --------------------------------------
+
+        elif source_type == "video":
+
+            sources.append({
+                "type": "video",
+                "file_id": result.get(
+                    "file_id"
+                ),
+                "start": result.get(
+                    "start"
+                ),
+                "end": result.get(
+                    "end"
+                ),
+                "chunk_index": result.get(
+                    "chunk_index"
+                ),
+                "text": result.get(
+                    "text"
+                ),
+                "distance": result.get(
+                    "distance"
+                )
+            })
 
     # ------------------------------------------
     # 6. Return final response

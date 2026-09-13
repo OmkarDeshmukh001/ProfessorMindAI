@@ -238,3 +238,117 @@ async def upload_pdf(
     finally:
 
         db.close()
+
+
+@router.post("/notebooks/{notebook_id}/upload-video")
+async def upload_video(
+    notebook_id: str,
+    file: UploadFile = File(...)
+):
+    allowed_types = {
+        "video/mp4",
+        "video/mpeg",
+        "video/webm",
+        "video/quicktime"
+    }
+
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Unsupported video format. "
+                "Allowed formats: MP4, MPEG, WebM, MOV."
+            )
+        )
+
+    db = SessionLocal()
+
+    try:
+        # Check notebook
+        notebook = (
+            db.query(Notebook)
+            .filter(Notebook.notebook_id == notebook_id)
+            .first()
+        )
+
+        if not notebook:
+            raise HTTPException(
+                status_code=404,
+                detail="Notebook not found."
+            )
+
+        # Notebook-specific source directory
+        source_dir = (
+            Path("storage/notebooks")
+            / str(notebook_id)
+            / "sources"
+        )
+
+        source_dir.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        # Generate unique file ID
+        file_id = str(uuid.uuid4())
+
+        # Preserve video extension
+        original_extension = Path(file.filename).suffix.lower()
+
+        if not original_extension:
+            original_extension = ".mp4"
+
+        stored_filename = (
+            f"{file_id}{original_extension}"
+        )
+
+        file_path = source_dir / stored_filename
+
+        # Save video
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(
+                file.file,
+                buffer
+            )
+
+        # Create database record
+        document = Document(
+            file_id=file_id,
+            notebook_id=notebook_id,
+            filename=file.filename,
+            stored_as=stored_filename,
+            file_type="video",
+            status="processing"
+        )
+
+        db.add(document)
+        db.commit()
+
+        return {
+            "message": "Video uploaded successfully",
+            "notebook_id": notebook_id,
+            "notebook_name": notebook.name,
+            "file_id": file_id,
+            "filename": file.filename,
+            "stored_as": stored_filename,
+            "file_type": "video",
+            "status": "processing"
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        db.rollback()
+
+        # Remove partially saved video
+        if "file_path" in locals() and file_path.exists():
+            file_path.unlink()
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Video upload failed: {str(e)}"
+        )
+
+    finally:
+        db.close()
