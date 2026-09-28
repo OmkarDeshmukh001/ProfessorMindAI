@@ -328,15 +328,12 @@ def delete_document(
 # 4. DELETE ENTIRE NOTEBOOK
 # ==================================================
 
-@router.delete(
-    "/notebooks/{notebook_id}"
-)
+@router.delete("/notebooks/{notebook_id}")
 def delete_notebook(notebook_id: str):
 
     db = SessionLocal()
 
     try:
-
         # ------------------------------------------
         # Check notebook exists
         # ------------------------------------------
@@ -350,7 +347,6 @@ def delete_notebook(notebook_id: str):
         )
 
         if not notebook:
-
             raise HTTPException(
                 status_code=404,
                 detail="Notebook not found."
@@ -373,34 +369,43 @@ def delete_notebook(notebook_id: str):
         total_documents = len(documents)
 
         # ------------------------------------------
-        # Delete document database records
+        # Delete database records
         # ------------------------------------------
 
         for document in documents:
             db.delete(document)
 
-        # ------------------------------------------
-        # Delete notebook database record
-        # ------------------------------------------
-
         db.delete(notebook)
-
         db.commit()
 
         # ------------------------------------------
-        # Delete entire notebook storage
+        # Delete notebook storage
         # ------------------------------------------
 
         notebook_dir = (
-            NOTEBOOKS_DIR
-            / str(notebook_id)
+            NOTEBOOKS_DIR / str(notebook_id)
         )
 
         if notebook_dir.exists():
+            try:
+                shutil.rmtree(notebook_dir)
+            except PermissionError:
+                # Windows may have a FAISS file temporarily locked.
+                # Remove files individually with writable permissions.
+                import os
+                import stat
 
-            shutil.rmtree(
-                notebook_dir
-            )
+                def remove_readonly(func, path, exc_info):
+                    try:
+                        os.chmod(path, stat.S_IWRITE)
+                        func(path)
+                    except Exception:
+                        pass
+
+                shutil.rmtree(
+                    notebook_dir,
+                    onerror=remove_readonly
+                )
 
         return {
             "message": "Notebook deleted successfully",
@@ -410,11 +415,9 @@ def delete_notebook(notebook_id: str):
         }
 
     except HTTPException:
-
         raise
 
     except Exception as e:
-
         db.rollback()
 
         raise HTTPException(
@@ -423,5 +426,4 @@ def delete_notebook(notebook_id: str):
         )
 
     finally:
-
         db.close()
