@@ -10,6 +10,26 @@ The long-term goal is to extend the system from PDF-based learning to a **multim
 
 ---
 
+## 🖥️ Application Screenshots
+
+### 1. Main Interface
+
+![ProfessorMind AI Interface](assets/screenshots/Interface.png)
+
+### 2. Notebook Management
+
+![Notebook Management](assets/screenshots/Notebook.png)
+
+### 3. Document Management
+
+![Document Management](assets/screenshots/Documents.png)
+
+### 4. Dashboard
+
+![ProfessorMind AI Dashboard](assets/screenshots/Dashboard.png)
+
+---
+
 ## Project Overview
 
 Students often have lecture notes, PDFs, presentations, recorded lectures, and handwritten materials spread across different locations.
@@ -218,26 +238,26 @@ This architecture ensures that documents belonging to different subjects do not 
 
 ### Notebook APIs
 
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/notebooks` | Create a notebook |
-| GET | `/api/notebooks` | Get all notebooks |
-| GET | `/api/notebooks/{notebook_id}` | Get a specific notebook |
-| DELETE | `/api/notebooks/{notebook_id}` | Delete a notebook |
+| Method | Endpoint                       | Description             |
+| ------ | ------------------------------ | ----------------------- |
+| POST   | `/api/notebooks`               | Create a notebook       |
+| GET    | `/api/notebooks`               | Get all notebooks       |
+| GET    | `/api/notebooks/{notebook_id}` | Get a specific notebook |
+| DELETE | `/api/notebooks/{notebook_id}` | Delete a notebook       |
 
 ### PDF APIs
 
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/notebooks/{notebook_id}/upload-pdf` | Upload and process PDF |
-| GET | `/api/notebooks/{notebook_id}/documents` | List notebook documents |
-| DELETE | `/api/notebooks/{notebook_id}/documents/{file_id}` | Delete a PDF |
+| Method | Endpoint                                           | Description             |
+| ------ | -------------------------------------------------- | ----------------------- |
+| POST   | `/api/notebooks/{notebook_id}/upload-pdf`          | Upload and process PDF  |
+| GET    | `/api/notebooks/{notebook_id}/documents`           | List notebook documents |
+| DELETE | `/api/notebooks/{notebook_id}/documents/{file_id}` | Delete a PDF            |
 
 ### RAG API
 
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/ask` | Ask a question using notebook knowledge |
+| Method | Endpoint   | Description                             |
+| ------ | ---------- | --------------------------------------- |
+| POST   | `/api/ask` | Ask a question using notebook knowledge |
 
 ### Example Request
 
