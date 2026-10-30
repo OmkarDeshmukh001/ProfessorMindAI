@@ -9,6 +9,9 @@ import {
   Bot,
 } from "lucide-react";
 
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
 import { listNotebooks } from "../services/notebookService";
 import { askQuestion } from "../services/questionService";
 
@@ -220,9 +223,125 @@ function Dashboard() {
                       {message.role === "user" ? "You" : "ProfessorMind"}
                     </div>
 
-                    <div className="whitespace-pre-wrap text-sm leading-7 text-white/90">
-                      {message.content}
-                    </div>
+                    {message.role === "assistant" ? (
+                      <div className="text-sm leading-7 text-white/90">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            h1: ({ children }) => (
+                              <h1 className="mt-5 mb-3 text-xl font-bold text-white">
+                                {children}
+                              </h1>
+                            ),
+
+                            h2: ({ children }) => (
+                              <h2 className="mt-5 mb-3 text-lg font-bold text-white">
+                                {children}
+                              </h2>
+                            ),
+
+                            h3: ({ children }) => (
+                              <h3 className="mt-4 mb-2 text-base font-semibold text-white">
+                                {children}
+                              </h3>
+                            ),
+
+                            p: ({ children }) => (
+                              <p className="mb-3 leading-7">{children}</p>
+                            ),
+
+                            ul: ({ children }) => (
+                              <ul className="mb-4 list-disc space-y-1 pl-6">
+                                {children}
+                              </ul>
+                            ),
+
+                            ol: ({ children }) => (
+                              <ol className="mb-4 list-decimal space-y-1 pl-6">
+                                {children}
+                              </ol>
+                            ),
+
+                            li: ({ children }) => (
+                              <li className="pl-1">{children}</li>
+                            ),
+
+                            strong: ({ children }) => (
+                              <strong className="font-semibold text-white">
+                                {children}
+                              </strong>
+                            ),
+
+                            em: ({ children }) => (
+                              <em className="italic text-white/90">
+                                {children}
+                              </em>
+                            ),
+
+                            table: ({ children }) => (
+                              <div className="my-4 overflow-x-auto rounded-lg">
+                                <table className="w-full border-collapse text-sm">
+                                  {children}
+                                </table>
+                              </div>
+                            ),
+
+                            thead: ({ children }) => (
+                              <thead className="bg-white/10">{children}</thead>
+                            ),
+
+                            th: ({ children }) => (
+                              <th className="border border-white/20 px-3 py-2 text-left font-semibold text-white">
+                                {children}
+                              </th>
+                            ),
+
+                            td: ({ children }) => (
+                              <td className="border border-white/20 px-3 py-2 text-white/80">
+                                {children}
+                              </td>
+                            ),
+
+                            blockquote: ({ children }) => (
+                              <blockquote className="my-3 border-l-2 border-white/30 pl-4 text-white/60">
+                                {children}
+                              </blockquote>
+                            ),
+
+                            code: ({ children }) => (
+                              <code className="rounded bg-white/10 px-1.5 py-0.5 text-amber-200">
+                                {children}
+                              </code>
+                            ),
+
+                            pre: ({ children }) => (
+                              <pre className="my-4 overflow-x-auto rounded-lg border border-white/10 bg-[#171717] p-4 text-sm">
+                                {children}
+                              </pre>
+                            ),
+
+                            hr: () => <hr className="my-5 border-white/10" />,
+
+                            a: ({ children, href }) => (
+                              <a
+                                href={href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-400 underline hover:text-blue-300"
+                              >
+                                {children}
+                              </a>
+                            ),
+                          }}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
+                      <div className="whitespace-pre-wrap text-sm leading-7 text-white/90">
+                        {message.content}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

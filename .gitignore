@@ -24,6 +24,12 @@ metadata/
 *.mp3
 *.m4a
 
+# Node.js
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+
 # IDE / OS
 .vscode/
 .idea/

@@ -2,15 +2,28 @@
 
 ## Professor-Centric Multimodal AI Learning Assistant
 
-ProfessorMind AI is a private, professor-centric AI learning assistant that allows students to build subject-specific knowledge bases from their own academic materials.
+ProfessorMind AI is a private, professor-centric AI learning assistant
+that allows students to create subject-specific knowledge bases from
+their own academic materials.
 
-The system uses **Retrieval-Augmented Generation (RAG)** to retrieve relevant information from uploaded lecture notes and generate answers using a locally hosted Large Language Model.
+The system uses **Retrieval-Augmented Generation (RAG)** to retrieve
+relevant information from uploaded learning resources and generate
+answers grounded in the selected notebook's content.
 
-The long-term goal is to extend the system from PDF-based learning to a **multimodal learning assistant** supporting videos, audio, images, OCR, and lecture understanding.
+Students can create separate notebooks for subjects, upload multiple
+PDFs and lecture videos, and ask questions across the materials stored
+in each notebook. Each notebook maintains its own source files and FAISS
+vector index to keep subject knowledge isolated.
+
+The current prototype supports PDF and video ingestion. Image/OCR
+processing and broader multimodal understanding are planned extensions.
 
 ---
 
-## 🖥️ Application Screenshots
+## Application Screenshots
+
+Add or update screenshots in `assets/screenshots/` and keep the
+filenames below aligned with the actual files in your repository.
 
 ### 1. Main Interface
 
@@ -32,30 +45,40 @@ The long-term goal is to extend the system from PDF-based learning to a **multim
 
 ## Project Overview
 
-Students often have lecture notes, PDFs, presentations, recorded lectures, and handwritten materials spread across different locations.
+Students often have lecture notes, PDFs, presentations, recorded
+lectures, and other academic resources spread across different
+locations. Finding relevant information across these materials can take
+time.
 
-ProfessorMind AI provides a centralized personal knowledge base for each subject.
-
-Each subject is represented as a **Notebook**, and every notebook has its own knowledge base and FAISS vector index.
+ProfessorMind AI provides a centralized, private knowledge base for each
+subject. Each subject is represented as a **Notebook**. A notebook can
+contain multiple supported learning resources, and its content is
+indexed independently.
 
 ```text
 Student
-│
-├── NLP Notebook
-│   ├── HMM.pdf
-│   ├── POS.pdf
-│   └── NLP FAISS Knowledge Base
-│
-├── Machine Learning Notebook
-│   ├── Regression.pdf
-│   ├── Classification.pdf
-│   └── ML FAISS Knowledge Base
-│
-└── Deep Learning Notebook
-    ├── CNN.pdf
-    ├── RNN.pdf
-    └── DL FAISS Knowledge Base
+  |
+  +-- NLP Notebook
+  |     +-- HMM.pdf
+  |     +-- POS.pdf
+  |     +-- Lecture video
+  |     +-- NLP FAISS knowledge base
+  |
+  +-- Machine Learning Notebook
+  |     +-- Regression.pdf
+  |     +-- Classification.pdf
+  |     +-- Lecture video
+  |     +-- ML FAISS knowledge base
+  |
+  +-- Deep Learning Notebook
+        +-- CNN.pdf
+        +-- RNN.pdf
+        +-- Lecture video
+        +-- DL FAISS knowledge base
 ```
+
+The notebook-specific architecture ensures that retrieval for one
+subject does not unintentionally mix content from another subject.
 
 ---
 
@@ -63,164 +86,163 @@ Student
 
 ### Notebook Management
 
-- Create notebooks
-- Store notebook metadata
-- List all notebooks
-- View individual notebooks
-- Delete complete notebooks
-- Maintain separate storage for each notebook
+- Create subject-specific notebooks.
+- List and view notebooks.
+- Delete notebooks.
+- Maintain separate source storage for each notebook.
+- Maintain a separate FAISS index for each notebook.
 
 ### PDF Knowledge Base
 
-- Upload PDF files to a selected notebook
-- Extract text from PDFs
-- Split extracted text into chunks
-- Generate vector embeddings
-- Store embeddings in notebook-specific FAISS indexes
-- Support multiple PDFs inside one notebook
+- Upload PDF files to a selected notebook.
+- Support multiple PDFs within one notebook.
+- Extract PDF text using PyMuPDF.
+- Split extracted text into overlapping chunks.
+- Generate vector embeddings using Sentence Transformers.
+- Store embeddings in the notebook-specific FAISS index.
+- Preserve document and page metadata for source references.
+
+### Video Knowledge Base
+
+- Upload lecture videos to a selected notebook.
+- Extract audio from uploaded videos.
+- Transcribe speech using Whisper.
+- Split transcript text into chunks.
+- Generate embeddings for transcript chunks.
+- Add video transcript embeddings to the selected notebook's FAISS
+  knowledge base.
+
+Timestamp-based retrieval and display should be considered supported
+only where the relevant implementation is enabled and tested.
 
 ### Retrieval-Augmented Generation
 
-- Query a complete notebook knowledge base
-- Retrieve relevant chunks from multiple PDFs
-- Maintain page ordering
-- Remove duplicate chunks
-- Apply retrieval distance filtering
-- Generate answers using a locally hosted LLM
-- Return source information including PDF and page references
-- Reject questions outside the uploaded knowledge base
+- Ask questions using the selected notebook's knowledge base.
+- Retrieve relevant chunks from indexed documents and video
+  transcripts.
+- Build context from retrieved content.
+- Generate answers using Groq-powered LLM inference.
+- Return source information where available, including document and
+  page references.
+- Apply retrieval filtering and duplicate handling.
+- Keep answers grounded in uploaded notebook content.
+- Use an explicit fallback when the requested information is outside
+  the available uploaded material.
 
 ### Document Management
 
-- View documents inside a notebook
-- View document metadata
-- Delete individual PDFs
-- Rebuild notebook FAISS after document deletion
-- Delete complete notebook storage
+- View documents associated with a notebook.
+- View document metadata.
+- Delete individual documents.
+- Rebuild the notebook's FAISS index after document deletion.
+- Delete notebook storage when a notebook is deleted.
+
+### Frontend
+
+- React-based dashboard.
+- Select a notebook for a conversation.
+- Ask questions through a chat interface.
+- Upload and manage learning resources.
+- View notebook and document information.
+- Render assistant responses with Markdown formatting, including
+  headings, lists, tables, and code formatting.
 
 ---
 
 ## Technology Stack
 
-### Backend
+Category Technologies
 
-- Python
-- FastAPI
-- SQLAlchemy
-- SQLite
+---
 
-### Document Processing
-
-- PyMuPDF
-- Python-based text chunking
-
-### Embeddings
-
-- Sentence Transformers
-- `all-MiniLM-L6-v2`
-- 384-dimensional embeddings
-
-### Vector Database
-
-- FAISS
-- `IndexFlatL2`
-
-### Large Language Model
-
-- Ollama
-- Llama 3.2
-
-### API Documentation
-
-- Swagger UI
-- OpenAPI
-
-### Frontend
-
-A basic React-based frontend is currently under development.
-
-Planned technologies:
-
-- React.js
-- Vite
-- Tailwind CSS
-- Axios
+Backend Python, FastAPI
+Database SQLite, SQLAlchemy
+PDF processing PyMuPDF
+Video processing MoviePy
+Speech recognition OpenAI Whisper
+Embedding framework Sentence Transformers
+Embedding model `all-MiniLM-L6-v2`
+Embedding dimension 384
+Vector search FAISS
+LLM inference Groq API
+Frontend React, TypeScript, Vite
+Styling Tailwind CSS
+Markdown rendering React Markdown, remark-gfm
+API documentation Swagger UI, OpenAPI
 
 ---
 
 ## System Architecture
 
 ```text
-                    ┌─────────────────────┐
-                    │       Student       │
-                    └──────────┬──────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │      Notebook       │
-                    │   (Subject-based)   │
-                    └──────────┬──────────┘
-                               │
-                 ┌─────────────┼─────────────┐
-                 │             │             │
-                 ▼             ▼             ▼
-              PDF 1         PDF 2         PDF 3
-                 │             │             │
-                 └─────────────┼─────────────┘
-                               ▼
-                    ┌─────────────────────┐
-                    │   Text Extraction   │
-                    └──────────┬──────────┘
-                               ▼
-                    ┌─────────────────────┐
-                    │      Chunking       │
-                    └──────────┬──────────┘
-                               ▼
-                    ┌─────────────────────┐
-                    │     Embeddings      │
-                    │  all-MiniLM-L6-v2   │
-                    └──────────┬──────────┘
-                               ▼
-                    ┌─────────────────────┐
-                    │   Notebook FAISS    │
-                    └──────────┬──────────┘
-                               │
-                         User Question
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │      Retrieval      │
-                    └──────────┬──────────┘
-                               ▼
-                    ┌─────────────────────┐
-                    │  Context Building   │
-                    └──────────┬──────────┘
-                               ▼
-                    ┌─────────────────────┐
-                    │      Llama 3.2      │
-                    │   Local Generation  │
-                    └──────────┬──────────┘
-                               ▼
-                    ┌─────────────────────┐
-                    │   Answer + Sources  │
-                    └─────────────────────┘
+                         Student
+                            |
+                            v
+                         Notebook
+                            |
+              +-------------+-------------+
+              |                           |
+              v                           v
+          PDF Files                  Video Files
+              |                           |
+              v                           v
+        Text Extraction              Audio Extraction
+              |                           |
+              v                           v
+           Chunking                    Whisper
+              |                           |
+              |                           v
+              |                     Transcription
+              |                           |
+              |                           v
+              |                        Chunking
+              |                           |
+              +-------------+-------------+
+                            |
+                            v
+                    Embedding Generation
+                            |
+                            v
+                  Notebook-specific FAISS
+                            |
+                            v
+                      User Question
+                            |
+                            v
+                    Query Embedding
+                            |
+                            v
+                    Similarity Search
+                            |
+                            v
+                     Relevant Chunks
+                            |
+                            v
+                    Context Construction
+                            |
+                            v
+                       Groq LLM
+                            |
+                            v
+                   Generated Answer
+                            |
+                            v
+                  Answer + Source Details
 ```
 
 ---
 
 ## Storage Architecture
 
-Each notebook has its own source files and FAISS knowledge base.
+Each notebook stores its source files and its own FAISS index.
 
 ```text
 storage/
 └── notebooks/
-    │
     ├── <notebook_id>/
     │   ├── sources/
     │   │   ├── document_1.pdf
-    │   │   └── document_2.pdf
-    │   │
+    │   │   └── lecture_video.mp4
     │   └── faiss/
     │       ├── index.faiss
     │       └── metadata.pkl
@@ -230,82 +252,146 @@ storage/
         └── faiss/
 ```
 
-This architecture ensures that documents belonging to different subjects do not share the same vector knowledge base.
+The exact files stored in each directory depend on the ingestion and
+indexing implementation.
 
----
+This design provides:
 
-## API Endpoints
+- Subject-level separation of knowledge.
+- Multiple sources within one notebook.
+- Independent retrieval indexes.
+- Notebook-level cleanup and deletion.
 
-### Notebook APIs
-
-| Method | Endpoint                       | Description             |
-| ------ | ------------------------------ | ----------------------- |
-| POST   | `/api/notebooks`               | Create a notebook       |
-| GET    | `/api/notebooks`               | Get all notebooks       |
-| GET    | `/api/notebooks/{notebook_id}` | Get a specific notebook |
-| DELETE | `/api/notebooks/{notebook_id}` | Delete a notebook       |
-
-### PDF APIs
-
-| Method | Endpoint                                           | Description             |
-| ------ | -------------------------------------------------- | ----------------------- |
-| POST   | `/api/notebooks/{notebook_id}/upload-pdf`          | Upload and process PDF  |
-| GET    | `/api/notebooks/{notebook_id}/documents`           | List notebook documents |
-| DELETE | `/api/notebooks/{notebook_id}/documents/{file_id}` | Delete a PDF            |
-
-### RAG API
-
-| Method | Endpoint   | Description                             |
-| ------ | ---------- | --------------------------------------- |
-| POST   | `/api/ask` | Ask a question using notebook knowledge |
-
-### Example Request
-
-```json
-{
-  "notebook_id": "your-notebook-id",
-  "question": "Explain Hidden Markov Model",
-  "top_k": 8
-}
-```
+Uploaded academic materials, generated indexes, and local database files
+should not be committed to the public repository.
 
 ---
 
 ## RAG Pipeline
 
-The current PDF RAG pipeline works as follows:
+### PDF Pipeline
 
 ```text
 PDF Upload
-    ↓
+    |
 PDF Text Extraction
-    ↓
+    |
 Text Chunking
-    ↓
+    |
 Embedding Generation
-    ↓
-Notebook-specific FAISS
-    ↓
-User Question
-    ↓
-Query Embedding
-    ↓
-Similarity Search
-    ↓
-Relevant Chunks
-    ↓
-Context Construction
-    ↓
-Llama 3.2
-    ↓
-Answer + Sources
+    |
+Notebook-specific FAISS Index
 ```
 
-The system is designed to answer questions using the uploaded notebook knowledge base rather than relying on unsupported external information.
+### Video Pipeline
+
+```text
+Video Upload
+    |
+Audio Extraction
+    |
+Whisper Transcription
+    |
+Transcript Chunking
+    |
+Embedding Generation
+    |
+Notebook-specific FAISS Index
+```
+
+### Question Answering Pipeline
+
+```text
+User Question
+    |
+Query Embedding
+    |
+Notebook FAISS Similarity Search
+    |
+Relevant Chunk Retrieval
+    |
+Context Construction
+    |
+Groq LLM
+    |
+Generated Answer + Available Sources
+```
+
+The question-answering pipeline uses retrieved notebook content as
+context. The intended behavior is to avoid presenting unsupported
+external information as if it came from the user's uploaded material.
+
+---
+
+## API Endpoints
+
+The following table documents the main routes used by the application.
+Confirm route names against the current FastAPI Swagger documentation at
+`/docs` if the implementation changes.
+
+### Notebook APIs
+
+Method Endpoint Description
+
+---
+
+POST `/api/notebooks` Create a notebook
+GET `/api/notebooks` List notebooks
+GET `/api/notebooks/{notebook_id}` Retrieve a notebook
+DELETE `/api/notebooks/{notebook_id}` Delete a notebook
+
+### Upload and Document APIs
+
+---
+
+Method Endpoint Description
+
+---
+
+POST `/api/notebooks/{notebook_id}/upload-pdf` Upload and process a
+PDF
+
+POST `/api/notebooks/{notebook_id}/upload-video` Upload and process a
+video
+
+GET `/api/notebooks/{notebook_id}/documents` List notebook documents
+
+DELETE `/api/notebooks/{notebook_id}/documents/{file_id}` Delete a document
+
+---
+
+### RAG API
+
+Method Endpoint Description
+
+---
+
+POST `/api/ask` Ask a question using notebook knowledge
+
+### Example Question Request
+
+```json
+{
+  "notebook_id": "your-notebook-id",
+  "question": "Explain the Hidden Markov Model",
+  "top_k": 8
+}
+```
+
+### API Documentation
+
+After starting the backend, open:
+
+```text
+http://127.0.0.1:8000/docs
+```
 
 ---
 
 ## Project Structure
+
+The following is a high-level overview. Some supporting files and
+subdirectories may be omitted.
 
 ```text
 ProfessorMindAI/
@@ -334,18 +420,40 @@ ProfessorMindAI/
 │   ├── database.py
 │   └── main.py
 │
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   ├── types/
+│   │   └── App.tsx
+│   ├── package.json
+│   └── vite.config.ts
+│
 ├── storage/
 │   └── notebooks/
 │
-├── professormind.db
-│
+├── .env.example
+├── .gitignore
 ├── requirements.txt
 └── README.md
 ```
 
 ---
 
-## Installation
+## Installation and Setup
+
+### Prerequisites
+
+Install the following before running the project:
+
+- Python 3.11
+- Node.js and npm
+- Git
+- A Groq API key
+
+Video processing may also require the system dependencies used by the
+installed MoviePy/FFmpeg configuration.
 
 ### 1. Clone the Repository
 
@@ -354,53 +462,47 @@ git clone https://github.com/OmkarDeshmukh001/ProfessorMindAI.git
 cd ProfessorMindAI
 ```
 
-### 2. Create Virtual Environment
+### 2. Create a Python Virtual Environment
 
 ```bash
 python -m venv venv
 ```
 
-### 3. Activate Virtual Environment
+### 3. Activate the Virtual Environment
 
-#### Windows Git Bash
+**Windows Git Bash**
 
 ```bash
 source venv/Scripts/activate
 ```
 
-#### Windows CMD
+**Windows CMD**
 
 ```cmd
 venv\Scripts\activate
 ```
 
-### 4. Install Dependencies
+### 4. Install Backend Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
+### 5. Configure Environment Variables
 
-## Ollama Setup
+Create a `.env` file in the project root.
 
-Install Ollama and make sure Llama 3.2 is available locally.
-
-Pull the model:
-
-```bash
-ollama pull llama3.2
+```env
+GROQ_API_KEY=your_groq_api_key
+GROQ_MODEL=openai/gpt-oss-120b
 ```
 
-Verify:
+Replace the placeholder with your own Groq API key.
 
-```bash
-ollama list
-```
+**Security:** Never commit `.env` or expose your API key. Keep `.env`
+excluded through `.gitignore`.
 
----
-
-## Run the Backend
+### 6. Run the Backend
 
 From the project root:
 
@@ -408,87 +510,133 @@ From the project root:
 python -m uvicorn backend.main:app --reload
 ```
 
-The backend will be available at:
+Backend URL:
 
 ```text
 http://127.0.0.1:8000
 ```
 
-Swagger API documentation:
+Swagger documentation:
 
 ```text
 http://127.0.0.1:8000/docs
 ```
 
+### 7. Install Frontend Dependencies
+
+Open another terminal and navigate to the frontend directory:
+
+```bash
+cd frontend
+npm install
+```
+
+### 8. Configure Frontend Environment
+
+Create a `.env` file inside `frontend/`:
+
+```env
+VITE_API_URL=http://127.0.0.1:8000
+```
+
+### 9. Run the Frontend
+
+From the `frontend/` directory:
+
+```bash
+npm run dev
+```
+
+The Vite development server will display the local frontend URL,
+typically:
+
+```text
+http://localhost:5173
+```
+
+Keep the backend and frontend terminals running while using the
+application.
+
 ---
 
 ## Development Status
 
-### Completed
+The status below is a project-level snapshot. Mark a feature as
+completed only after verifying it in the current codebase.
+
+### Implemented
 
 - [x] FastAPI backend
-- [x] SQLite database
-- [x] Notebook creation
+- [x] SQLite database integration
+- [x] Notebook creation and listing
 - [x] Notebook-specific storage
-- [x] PDF upload
-- [x] PDF text extraction
+- [x] Notebook deletion
+- [x] PDF upload and text extraction
 - [x] Text chunking
 - [x] Sentence Transformer embeddings
-- [x] Notebook-specific FAISS
-- [x] Multi-PDF notebook knowledge base
+- [x] Notebook-specific FAISS indexes
+- [x] Multiple PDFs in a notebook
 - [x] Notebook-based retrieval
 - [x] Context construction
-- [x] Local Llama 3.2 integration
+- [x] Groq LLM integration
 - [x] RAG question answering
-- [x] Source/page references
-- [x] PDF deletion
-- [x] FAISS rebuilding after PDF deletion
-- [x] Notebook deletion
+- [x] PDF source and page references
+- [x] Document listing and deletion
+- [x] FAISS rebuilding after document deletion
+- [x] React frontend and backend integration
+- [x] Notebook selection and chat interface
+- [x] Markdown rendering for assistant responses
+- [x] Video upload and transcription pipeline
 
-### In Progress
+### Planned / Future Work
 
-- [ ] Basic React frontend
-- [ ] Frontend-backend integration
-- [ ] Video ingestion
-- [ ] Whisper speech-to-text
-- [ ] Timestamp-based video retrieval
-- [ ] Image/OCR processing
-- [ ] Multimodal retrieval
-- [ ] Multimodal RAG
+- [ ] Image ingestion and OCR
+- [ ] Broader multimodal retrieval
+- [ ] Improved timestamp-based video retrieval and source display
 - [ ] Authentication
-- [ ] Student/user management
+- [ ] Student and user management
+- [ ] Further evaluation of retrieval quality and answer grounding
+- [ ] Production deployment and monitoring
 
 ---
 
 ## Future Multimodal Architecture
 
-The final system is planned to support multiple academic media types:
+The long-term objective is to extend the notebook knowledge base to
+additional academic formats.
 
 ```text
                          Notebook
-                            │
-              ┌─────────────┼─────────────┐
-              │             │             │
-             PDF          Video         Image
-              │             │             │
-           PyMuPDF        Whisper          OCR
-              │             │             │
-              └─────────────┼─────────────┘
-                            │
-                      Multimodal
-                    Knowledge Base
-                            │
-                          FAISS
-                            │
-                           RAG
-                            │
-                        Local LLM
-                            │
-                            ▼
-                   Personalized Answer
+                            |
+             +--------------+--------------+
+             |              |              |
+             v              v              v
+            PDF           Video          Image
+             |              |              |
+       Text Extraction   Whisper           OCR
+             |         Transcription        |
+             |              |              |
+             +--------------+--------------+
+                            |
+                            v
+                  Unified Knowledge Base
+                            |
+                            v
+                    Vector Retrieval
+                            |
+                            v
+                       RAG Pipeline
+                            |
+                            v
+                         LLM
+                            |
+                            v
+                 Grounded Learning Answer
 ```
 
-Future versions may also incorporate audio understanding, lecture-level video retrieval, timestamp references, and multimodal question answering.
+Potential future extensions include image understanding, OCR for
+handwritten notes, richer audio understanding, lecture-level video
+retrieval, timestamp references, and multimodal question answering.
 
 ---
 
@@ -496,31 +644,45 @@ Future versions may also incorporate audio understanding, lecture-level video re
 
 ProfessorMind AI aims to provide:
 
-- Private academic knowledge retrieval
-- Subject-specific knowledge bases
-- Professor lecture material understanding
-- Multi-document question answering
-- Source-grounded responses
-- Local LLM inference
-- Multimodal lecture understanding
-- Personalized student learning assistance
+- Private academic knowledge retrieval.
+- Subject-specific knowledge bases.
+- Multi-document question answering.
+- Lecture material understanding.
+- Source-grounded responses.
+- A unified retrieval experience across supported academic resources.
+- Personalized student learning assistance.
+- An extensible foundation for multimodal learning.
 
 ---
 
 ## Disclaimer
 
-ProfessorMind AI is an academic project and research prototype developed for educational purposes.
+ProfessorMind AI is an academic project and research prototype developed
+for educational purposes.
 
-The current implementation focuses primarily on **PDF-based Retrieval-Augmented Generation**. Multimodal capabilities are planned for future development.
+The current implementation focuses on notebook-based PDF and video
+ingestion and retrieval-augmented question answering. Image/OCR
+processing and additional multimodal capabilities are planned
+extensions. Actual functionality may vary as development progresses.
 
 ---
 
-## GitHub Update
+## Author
 
-After replacing the README:
+**Omkar Deshmukh**
 
-```bash
-git add README.md
-git commit -m "Add comprehensive project README"
-git push origin main
-```
+- GitHub: [OmkarDeshmukh001](https://github.com/OmkarDeshmukh001)
+
+---
+
+## Contributing
+
+Suggestions, bug reports, and improvements are welcome. For significant
+changes, consider opening an issue before submitting a pull request.
+
+---
+
+## License
+
+No license has been specified yet. If you intend to make this repository
+open source, add an appropriate `LICENSE` file and update this section.
